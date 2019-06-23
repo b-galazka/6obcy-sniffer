@@ -1,0 +1,10 @@
+{
+  "name": "6obcy-spy",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "b-galazka",
+  "license": "ISC",
+  "dependencies": {
+    "websocket": "^1.0.28"
+  }
+}
