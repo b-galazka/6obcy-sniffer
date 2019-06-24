@@ -9,6 +9,7 @@ class Stranger extends EventEmitter {
         this._wsClient = wsClient;
         this._socket = null;
         this._conversationKey = null;
+        this._forceClosed;
     }
 
     initConnection() {
@@ -26,6 +27,7 @@ class Stranger extends EventEmitter {
     }
 
     endConversation() {
+        this._forceClosed = true;
         this._socket.sendUTF(`4{"ev_name":"_distalk","ev_data":{"ckey":"${this._conversationKey}"},"ceid":15}`);
     }
 
@@ -47,6 +49,9 @@ class Stranger extends EventEmitter {
 
             case 'sdis':
                 return this._handleConversationEnd();
+
+            case 'piwo':
+                return this._handlePiwoEvent();
         }
     }
 
@@ -62,8 +67,18 @@ class Stranger extends EventEmitter {
         this.emit('message', msgData.ev_data.msg);
     }
 
-    _handleConversationEnd(msgData) {
-        this.emit('conversationEnd');
+    _handleConversationEnd() {
+        if (this._forceClosed) {
+            this.emit('reconnection');
+        } else {
+            this.emit('conversationEnd');
+        }
+
+        this._forceClosed = false;
+    }
+
+    _handlePiwoEvent() {
+        this._socket.sendUTF('4{"ev_name":"_gdzie"}');
     }
 
     _handleConnectionError(err) {

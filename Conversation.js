@@ -12,6 +12,7 @@ class Conversation {
 
         this._setMessageHandlers();
         this._setConversationEndHandlers();
+        this._setReconnectionHandlers();
     }
 
     _setMessageHandlers() {
@@ -28,24 +29,25 @@ class Conversation {
 
     _setConversationEndHandlers() {
         this.stranger1.on('conversationEnd', () => {
-            this._logInfo('conversation end');
-/*             this.stranger2.endConversation();
-
-            this.stranger2.once('conversationEnd', () => {
-                this._logInfo('conversation start');
-                this.stranger2.startConversation();
-            }); */
+            this._logInfo('conversation end by stranger 1');
+            this.stranger2.endConversation();
         });
 
         this.stranger2.on('conversationEnd', () => {
-            this._logInfo('conversation end');
-/*             this.stranger1.endConversation();
-
-            this.stranger1.once('conversationEnd', () => {
-                this._logInfo('conversation start');
-                this.stranger1.startConversation();
-            }); */
+            this._logInfo('conversation end by stranger 2');
+            this.stranger1.endConversation();
         });
+    }
+
+    _setReconnectionHandlers() {
+        this.stranger1.on('reconnection', this._handleReconnection.bind(this));
+        this.stranger2.on('reconnection', this._handleReconnection.bind(this));
+    }
+
+    _handleReconnection() {
+        this._logInfo('conversation start');
+        this.stranger1.startConversation();
+        this.stranger2.startConversation();
     }
 
     _logInfo(msg) {
