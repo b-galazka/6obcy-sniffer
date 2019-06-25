@@ -9,7 +9,7 @@ class Stranger extends EventEmitter {
         this._wsClient = wsClient;
         this._socket = null;
         this._conversationKey = null;
-        this._forceClosed;
+        this._forceClosed = false;
     }
 
     initConnection() {
@@ -29,6 +29,10 @@ class Stranger extends EventEmitter {
     endConversation() {
         this._forceClosed = true;
         this._socket.sendUTF(`4{"ev_name":"_distalk","ev_data":{"ckey":"${this._conversationKey}"},"ceid":15}`);
+    }
+
+    get isConversationStarted() {
+        return !!this._conversationKey;
     }
 
     _handleConnectionSuccess(socket) {
@@ -61,6 +65,7 @@ class Stranger extends EventEmitter {
 
     _handleConversationStart(msgData) {
         this._conversationKey = msgData.ev_data.ckey;
+        this.emit('conversationStart');
     }
 
     _handleStrangerMessage(msgData) {
@@ -74,6 +79,7 @@ class Stranger extends EventEmitter {
             this.emit('conversationEnd');
         }
 
+        this._conversationKey = null;
         this._forceClosed = false;
     }
 

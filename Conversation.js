@@ -16,15 +16,31 @@ class Conversation {
     }
 
     _setMessageHandlers() {
-        this.stranger1.on('message', msg => {
-            console.log('stranger1: ', msg);
-            this.stranger2.sendMessage(msg);
+        this.stranger1.on('message', (msg) => {
+            if (this.stranger2.isConversationStarted) {
+                return this._talkToStranger2(msg);
+            }
+
+            this.stranger2.once('conversationStart', () => this._talkToStranger2(msg));
         });
 
-        this.stranger2.on('message', msg => {
-            console.log('stranger2: ', msg);
-            this.stranger1.sendMessage(msg);
+        this.stranger2.on('message', (msg) => {
+            if (this.stranger1.isConversationStarted) {
+                return this._talkToStranger1(msg);
+            }
+
+            this.stranger1.once('conversationStart', () => this._talkToStranger1(msg));
         });
+    }
+
+    _talkToStranger1(msg) {
+        console.log('stranger1: ', msg);
+        this.stranger2.sendMessage(msg);
+    }
+
+    _talkToStranger2(msg) {
+        console.log('stranger2: ', msg);
+        this.stranger1.sendMessage(msg);
     }
 
     _setConversationEndHandlers() {
