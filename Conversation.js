@@ -34,13 +34,13 @@ class Conversation {
     }
 
     _talkToStranger1(msg) {
-        console.log('stranger1: ', msg);
-        this.stranger2.sendMessage(msg);
+        console.log('stranger2: ', msg);
+        this.stranger1.sendMessage(msg);
     }
 
     _talkToStranger2(msg) {
-        console.log('stranger2: ', msg);
-        this.stranger1.sendMessage(msg);
+        console.log('stranger1: ', msg);
+        this.stranger2.sendMessage(msg);
     }
 
     _setConversationEndHandlers() {
