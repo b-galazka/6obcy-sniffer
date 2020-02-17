@@ -10,6 +10,8 @@ class Stranger extends EventEmitter {
         this._socket = null;
         this._conversationKey = null;
         this._forceClosed = false;
+        this._isTimeout = false;
+        this._ceid = 0;
     }
 
     initConnection() {
@@ -19,16 +21,19 @@ class Stranger extends EventEmitter {
     }
 
     sendMessage(msg) {
-        this._socket.sendUTF(`4{"ev_name":"_pmsg","ev_data":{"ckey":"${this._conversationKey}","msg":"${msg}","idn":0},"ceid":7}`);
+        this._socket.sendUTF(`4{"ev_name":"_pmsg","ev_data":{"ckey":"${this._conversationKey}","msg":"${msg}","idn":0},"ceid":${++this._ceid}}`);
     }
 
     startConversation() {
-        this._socket.sendUTF('4{"ev_name":"_sas","ev_data":{"channel":"main","myself":{"sex":0,"loc":0},"preferences":{"sex":0,"loc":0}},"ceid":1}');
+        this._socket.sendUTF(
+            `4{"ev_name":"_sas","ev_data":{"channel":"main","myself":{"sex":0,"loc":0},"preferences":{"sex":0,"loc":0}},"ceid":${++this._ceid}}`
+        );
     }
 
-    endConversation() {
-        this._forceClosed = true;
-        this._socket.sendUTF(`4{"ev_name":"_distalk","ev_data":{"ckey":"${this._conversationKey}"},"ceid":15}`);
+    endConversation(isTimeout = false) {
+        this._forceClosed = !isTimeout;
+        this._isTimeout = isTimeout;
+        this._socket.sendUTF(`4{"ev_name":"_distalk","ev_data":{"ckey":"${this._conversationKey}"},"ceid":${++this._ceid}}`);
     }
 
     get isConversationStarted() {
@@ -37,8 +42,17 @@ class Stranger extends EventEmitter {
 
     _handleConnectionSuccess(socket) {
         this._socket = socket;
+        socket.once('message', this._handleWelcomeMessage.bind(this));
         socket.on('message', this._handleSocketMessage.bind(this));
         this.startConversation();
+
+        socket.on('error', console.log);
+        socket.on('close', console.log);
+    }
+
+    _handleWelcomeMessage({ utf8Data }) {
+        const { pingInterval } = Stranger._parseMessageData(utf8Data);
+        setInterval(() => this._socket.sendUTF('2'), pingInterval);
     }
 
     _handleSocketMessage({ utf8Data }) {
@@ -53,9 +67,6 @@ class Stranger extends EventEmitter {
 
             case 'sdis':
                 return this._handleConversationEnd();
-
-            case 'piwo':
-                return this._handlePiwoEvent();
         }
     }
 
@@ -76,15 +87,12 @@ class Stranger extends EventEmitter {
         if (this._forceClosed) {
             this.emit('reconnection');
         } else {
-            this.emit('conversationEnd');
+            this.emit('conversationEnd', this._isTimeout);
         }
 
         this._conversationKey = null;
         this._forceClosed = false;
-    }
-
-    _handlePiwoEvent() {
-        this._socket.sendUTF('4{"ev_name":"_gdzie"}');
+        this._isTimeout = false;
     }
 
     _handleConnectionError(err) {

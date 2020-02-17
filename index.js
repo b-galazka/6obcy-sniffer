@@ -7,4 +7,5 @@ const conversation = new Conversation(new Stranger(new WsClient()), new Stranger
 
 conversation.init();
 
-process.stdin.resume();
+// TODO add "/skip", "1: msg", and "2: msg" commands
+// TODO: refactor

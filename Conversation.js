@@ -2,6 +2,7 @@ class Conversation {
     constructor(stranger1, stranger2) {
         this.stranger1 = stranger1;
         this.stranger2 = stranger2;
+        this._timeoutId = null;
     }
 
     init() {
@@ -13,10 +14,15 @@ class Conversation {
         this._setMessageHandlers();
         this._setConversationEndHandlers();
         this._setReconnectionHandlers();
+        this._setConversationStartHandlers();
+
+        process.stdin.resume();
     }
 
     _setMessageHandlers() {
         this.stranger1.on('message', (msg) => {
+            clearTimeout(this._timeoutId);
+
             if (this.stranger2.isConversationStarted) {
                 return this._talkToStranger2(msg);
             }
@@ -25,6 +31,8 @@ class Conversation {
         });
 
         this.stranger2.on('message', (msg) => {
+            clearTimeout(this._timeoutId);
+
             if (this.stranger1.isConversationStarted) {
                 return this._talkToStranger1(msg);
             }
@@ -44,13 +52,19 @@ class Conversation {
     }
 
     _setConversationEndHandlers() {
-        this.stranger1.on('conversationEnd', () => {
-            this._logInfo('conversation end by stranger 1');
+        this.stranger1.on('conversationEnd', (isTimeout) => {
+            if (!isTimeout) {
+                this._logInfo('conversation end by stranger 1');
+            }
+
             this.stranger2.endConversation();
         });
 
-        this.stranger2.on('conversationEnd', () => {
-            this._logInfo('conversation end by stranger 2');
+        this.stranger2.on('conversationEnd', (isTimeout) => {
+            if (!isTimeout) {
+                this._logInfo('conversation end by stranger 2');
+            }
+
             this.stranger1.endConversation();
         });
     }
@@ -64,6 +78,29 @@ class Conversation {
         this._logInfo('conversation start');
         this.stranger1.startConversation();
         this.stranger2.startConversation();
+    }
+
+    _setConversationStartHandlers() {
+        this.stranger1.on('conversationStart', () => {
+            this._setTimeout(() => {
+                this.stranger1.endConversation(false);
+            });
+        });
+
+        this.stranger2.on('conversationStart', () => {
+            this._setTimeout(() => {
+                this.stranger2.endConversation(false);
+            });
+        });
+    }
+
+    _setTimeout(callback) {
+        clearTimeout(this._timeoutId);
+
+        this._timeoutId = setTimeout(() => {
+            this._logInfo('timeout');
+            callback();
+        }, 60 * 1000);
     }
 
     _logInfo(msg) {
