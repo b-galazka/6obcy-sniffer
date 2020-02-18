@@ -60,5 +60,4 @@ test.env
 prod.env
 dev.env
 
-# built app
-build/
+dist/
