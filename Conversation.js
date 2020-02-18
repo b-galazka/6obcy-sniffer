@@ -9,7 +9,7 @@ class Conversation {
         this.stranger1.initConnection();
         this.stranger2.initConnection();
 
-        this._logInfo('conversation start');
+        Conversation._logInfo('conversation start');
 
         this._setMessageHandlers();
         this._setConversationEndHandlers();
@@ -20,7 +20,7 @@ class Conversation {
     }
 
     _setMessageHandlers() {
-        this.stranger1.on('message', (msg) => {
+        this.stranger1.on('message', msg => {
             clearTimeout(this._timeoutId);
 
             if (this.stranger2.isConversationStarted) {
@@ -30,7 +30,7 @@ class Conversation {
             this.stranger2.once('conversationStart', () => this._talkToStranger2(msg));
         });
 
-        this.stranger2.on('message', (msg) => {
+        this.stranger2.on('message', msg => {
             clearTimeout(this._timeoutId);
 
             if (this.stranger1.isConversationStarted) {
@@ -52,17 +52,17 @@ class Conversation {
     }
 
     _setConversationEndHandlers() {
-        this.stranger1.on('conversationEnd', (isTimeout) => {
+        this.stranger1.on('conversationEnd', isTimeout => {
             if (!isTimeout) {
-                this._logInfo('conversation end by stranger 1');
+                Conversation._logInfo('conversation end by stranger 1');
             }
 
             this.stranger2.endConversation();
         });
 
-        this.stranger2.on('conversationEnd', (isTimeout) => {
+        this.stranger2.on('conversationEnd', isTimeout => {
             if (!isTimeout) {
-                this._logInfo('conversation end by stranger 2');
+                Conversation._logInfo('conversation end by stranger 2');
             }
 
             this.stranger1.endConversation();
@@ -75,7 +75,7 @@ class Conversation {
     }
 
     _handleReconnection() {
-        this._logInfo('conversation start');
+        Conversation._logInfo('conversation start');
         this.stranger1.startConversation();
         this.stranger2.startConversation();
     }
@@ -98,12 +98,12 @@ class Conversation {
         clearTimeout(this._timeoutId);
 
         this._timeoutId = setTimeout(() => {
-            this._logInfo('timeout');
+            Conversation._logInfo('timeout');
             callback();
         }, 60 * 1000);
     }
 
-    _logInfo(msg) {
+    static _logInfo(msg) {
         const border = '='.repeat(10);
         console.log(`${border} ${msg.toUpperCase()} ${border}`);
     }

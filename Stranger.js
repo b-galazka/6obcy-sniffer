@@ -16,24 +16,32 @@ class Stranger extends EventEmitter {
 
     initConnection() {
         this._wsClient.on('connect', this._handleConnectionSuccess.bind(this));
-        this._wsClient.on('connectFailed', this._handleConnectionError.bind(this));
+        this._wsClient.on('connectFailed', Stranger._handleConnectionError);
         this._wsClient.connect(url);
     }
 
     sendMessage(msg) {
-        this._socket.sendUTF(`4{"ev_name":"_pmsg","ev_data":{"ckey":"${this._conversationKey}","msg":"${msg}","idn":0},"ceid":${++this._ceid}}`);
+        this._socket.sendUTF(
+            `4{"ev_name":"_pmsg","ev_data":{"ckey":"${
+                this._conversationKey
+            }","msg":"${msg}","idn":0},"ceid":${++this._ceid}}`
+        );
     }
 
     startConversation() {
         this._socket.sendUTF(
-            `4{"ev_name":"_sas","ev_data":{"channel":"main","myself":{"sex":0,"loc":0},"preferences":{"sex":0,"loc":0}},"ceid":${++this._ceid}}`
+            `4{"ev_name":"_sas","ev_data":{"channel":"main","myself":{"sex":0,"loc":0},"preferences":{"sex":0,"loc":0}},"ceid":${++this
+                ._ceid}}`
         );
     }
 
     endConversation(isTimeout = false) {
         this._forceClosed = !isTimeout;
         this._isTimeout = isTimeout;
-        this._socket.sendUTF(`4{"ev_name":"_distalk","ev_data":{"ckey":"${this._conversationKey}"},"ceid":${++this._ceid}}`);
+        this._socket.sendUTF(
+            `4{"ev_name":"_distalk","ev_data":{"ckey":"${this._conversationKey}"},"ceid":${++this
+                ._ceid}}`
+        );
     }
 
     get isConversationStarted() {
@@ -95,7 +103,7 @@ class Stranger extends EventEmitter {
         this._isTimeout = false;
     }
 
-    _handleConnectionError(err) {
+    static _handleConnectionError(err) {
         console.error(err);
     }
 }

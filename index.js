@@ -7,5 +7,7 @@ const conversation = new Conversation(new Stranger(new WsClient()), new Stranger
 
 conversation.init();
 
-// TODO add "/skip", "1: msg", and "2: msg" commands
+// TODO: add "/skip", "1: msg", and "2: msg" commands
+// TODO: handle random questions
+// TODO: allow to log to files
 // TODO: refactor

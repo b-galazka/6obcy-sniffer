@@ -4,7 +4,19 @@
   "main": "index.js",
   "author": "b-galazka",
   "license": "ISC",
+  "scripts": {
+    "start": "node index",
+    "lint": "eslint **/*.js",
+    "prettier": "prettier *.js",
+    "prettier:check": "npm run prettier -- --check"
+  },
   "dependencies": {
     "websocket": "^1.0.28"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-plugin-import": "^2.20.1",
+    "husky": "^4.2.3",
+    "prettier": "^1.19.1"
   }
 }
