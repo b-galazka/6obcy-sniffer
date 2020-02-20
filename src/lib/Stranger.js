@@ -1,14 +1,15 @@
 const EventEmitter = require('events');
 
-const { url } = require('../config');
-const parseJson = require('../utils/parseJson');
+const { parseJson } = require('../utils/parseJson');
 const strangerEvents = require('../consts/strangerEvents');
 
 class Stranger extends EventEmitter {
-    constructor(wsClient) {
+    constructor(wsClient, url, logger) {
         super();
 
         this._wsClient = wsClient;
+        this._url = url;
+        this._logger = logger;
         this._isConversationEndedByMe = false;
         this._isConversationEndedByTimeout = false;
         this._ceid = 0;
@@ -23,7 +24,7 @@ class Stranger extends EventEmitter {
     initConnection() {
         this._wsClient.on('connect', socket => this._handleConnectionSuccess(socket));
         this._wsClient.on('connectFailed', Stranger._handleConnectionError);
-        this._wsClient.connect(url);
+        this._wsClient.connect(this._url);
     }
 
     sendMessage(msg) {
@@ -56,7 +57,7 @@ class Stranger extends EventEmitter {
     }
 
     static _handleConnectionError(err) {
-        console.error(err);
+        this._logger.error(err);
     }
 
     _emitSocketEvent(eventName, eventData) {
@@ -129,4 +130,4 @@ class Stranger extends EventEmitter {
     }
 }
 
-module.exports = Stranger;
+module.exports = { Stranger };

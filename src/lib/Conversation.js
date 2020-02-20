@@ -1,9 +1,11 @@
 const strangerEvents = require('../consts/strangerEvents');
 
 class Conversation {
-    constructor(stranger1, stranger2) {
+    constructor(stranger1, stranger2, inactiveConversationTimeout, logger) {
         this._stranger1 = stranger1;
         this._stranger2 = stranger2;
+        this._inactiveConversationTimeout = inactiveConversationTimeout;
+        this._logger = logger;
         this._conversationTimeoutId = null;
     }
 
@@ -17,7 +19,7 @@ class Conversation {
         this._stranger1.initConnection();
         this._stranger2.initConnection();
 
-        Conversation._logInfo('conversation searching');
+        this._logger.info('conversation searching');
 
         process.stdin.resume();
     }
@@ -49,12 +51,12 @@ class Conversation {
     }
 
     _talkToStranger1(msg) {
-        console.log('stranger2: ', msg);
+        this._logger.stranger1(msg);
         this._stranger1.sendMessage(msg);
     }
 
     _talkToStranger2(msg) {
-        console.log('stranger1: ', msg);
+        this._logger.stranger2(msg);
         this._stranger2.sendMessage(msg);
     }
 
@@ -69,7 +71,7 @@ class Conversation {
     }
 
     _handleConversationEndByMe() {
-        Conversation._logInfo('conversation searching');
+        this._logger.info('conversation searching');
         this._stranger1.startConversation();
         this._stranger2.startConversation();
     }
@@ -86,28 +88,28 @@ class Conversation {
 
     _setConversationEndByAnotherStrangerHandlers() {
         this._stranger1.on(strangerEvents.conversationEndByAnotherStranger, () => {
-            Conversation._logInfo('conversation end by stranger 1');
+            this._logger.info('conversation ended by stranger 1');
             this._stranger2.endConversation();
         });
 
         this._stranger2.on(strangerEvents.conversationEndByAnotherStranger, () => {
-            Conversation._logInfo('conversation end by stranger 2');
+            this._logger.info('conversation ended by stranger 2');
             this._stranger1.endConversation();
         });
     }
 
     _setConversationStartHandlers() {
         this._stranger1.on(strangerEvents.conversationStart, () => {
-            if (!this._stranger2.isConversationStarted) {
-                Conversation._logInfo('conversation start');
+            if (this._stranger2.isConversationStarted) {
+                this._logger.info('conversation started');
             }
 
             this._setConversationTimeout(this._stranger1);
         });
 
         this._stranger2.on(strangerEvents.conversationStart, () => {
-            if (!this._stranger1.isConversationStarted) {
-                Conversation._logInfo('conversation start');
+            if (this._stranger1.isConversationStarted) {
+                this._logger.info('conversation start');
             }
 
             this._setConversationTimeout(this._stranger2);
@@ -118,15 +120,10 @@ class Conversation {
         clearTimeout(this._conversationTimeoutId);
 
         this._conversationTimeoutId = setTimeout(() => {
-            Conversation._logInfo('timeout');
+            this._logger.info('conversation timeout');
             stranger.endConversation({ isTimeout: true });
-        }, 60 * 1000);
-    }
-
-    static _logInfo(msg) {
-        const border = '='.repeat(10);
-        console.log(`${border} ${msg.toUpperCase()} ${border}`);
+        }, this._inactiveConversationTimeout);
     }
 }
 
-module.exports = Conversation;
+module.exports = { Conversation };

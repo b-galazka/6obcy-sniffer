@@ -11,6 +11,7 @@
         "prettier:check": "npm run prettier -- --check"
     },
     "dependencies": {
+        "colors": "^1.4.0",
         "websocket": "^1.0.28"
     },
     "devDependencies": {
