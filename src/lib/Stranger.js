@@ -53,7 +53,7 @@ class Stranger extends EventEmitter {
         this._isConversationEndedByMe = !isTimeout;
         this._isConversationEndedByTimeout = isTimeout;
 
-        this._emitSocketEvent('_distalk', { ckey: this._conversationKe });
+        this._emitSocketEvent('_distalk', { ckey: this._conversationKey });
     }
 
     static _handleConnectionError(err) {
@@ -92,6 +92,8 @@ class Stranger extends EventEmitter {
 
     _handleSocketMessage({ utf8Data }) {
         const msgData = parseJson(utf8Data);
+
+        console.log(msgData);
 
         switch (msgData.ev_name) {
             case 'talk_s':
