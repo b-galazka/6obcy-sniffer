@@ -11,4 +11,3 @@ conversation.init();
 // TODO: handle random questions
 // TODO: allow to log to files
 // TODO: add colored output
-// TODO: refactor
