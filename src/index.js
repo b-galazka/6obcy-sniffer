@@ -1,11 +1,13 @@
 const WsClient = require('websocket').client;
 const colors = require('colors/safe');
 const readline = require('readline');
+const fileSystem = require('fs');
+const path = require('path');
 
 const { Stranger } = require('./lib/Stranger');
 const { Conversation } = require('./lib/Conversation');
 const { Logger } = require('./utils/Logger');
-const { url, inactiveConversationTimeout } = require('./config');
+const { url, inactiveConversationTimeout, logToFile, logsDirectory } = require('./config');
 
 colors.setTheme({
     info: 'brightBlue',
@@ -15,7 +17,13 @@ colors.setTheme({
 });
 
 const consoleIoInterface = readline.createInterface({ input: process.stdin });
-const logger = new Logger(colors);
+
+const logger = new Logger(
+    colors,
+    logToFile,
+    path.resolve(__dirname, logsDirectory),
+    fileSystem
+).init();
 
 const conversation = new Conversation({
     stranger1: new Stranger(new WsClient(), url, logger),
@@ -27,5 +35,3 @@ const conversation = new Conversation({
 });
 
 conversation.init();
-
-// TODO: allow to log to files

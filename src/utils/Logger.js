@@ -1,29 +1,68 @@
+const path = require('path');
+
 class Logger {
-    constructor(colors) {
+    constructor(colors, shouldLogToFile, logsDirectory, fileSystem) {
         this._colors = colors;
+        this._shouldLogToFile = shouldLogToFile;
+        this._logsDirectory = logsDirectory;
+        this._fileSystem = fileSystem;
+        this._logsFilePath = null;
+    }
+
+    init() {
+        if (this._shouldLogToFile) {
+            this._fileSystem.mkdirSync(this._logsDirectory, { recursive: true });
+            this._logsFilePath = path.resolve(this._logsDirectory, Logger._getLogsFileName());
+        }
+
+        return this;
+    }
+
+    static _getLogsFileName() {
+        const currentDate = new Date();
+
+        const date = currentDate
+            .toLocaleDateString('pl-PL')
+            .split('.')
+            .join('_');
+
+        const time = currentDate
+            .toLocaleTimeString('pl-PL')
+            .split(':')
+            .join('_');
+
+        return `${date}_${time}.log`;
     }
 
     info(text) {
         const formattedText = this._colors.info(text.toUpperCase());
-        console.log(formattedText);
+        this._log(text.toUpperCase(), formattedText);
     }
 
     error(text) {
         const formattedText = this._colors.error(text);
-
-        console.log('\n<Error>');
-        console.log(formattedText);
-        console.log('</Error>\n');
+        this._log(`\n<Error>\n${text}\n</Error>\n`, `\n<Error>\n${formattedText}\n</Error>\n`);
     }
 
     stranger1(text, strangerName) {
         const formattedText = this._colors.stranger1(`${this._colors.bold(strangerName)}: ${text}`);
-        console.log(formattedText);
+        this._log(`${strangerName} (1): ${text}`, formattedText);
     }
 
     stranger2(text, strangerName) {
         const formattedText = this._colors.stranger2(`${this._colors.bold(strangerName)}: ${text}`);
-        console.log(formattedText);
+        this._log(`${strangerName} (2): ${text}`, formattedText);
+    }
+
+    _log(text, formattedText = text) {
+        const currentDate = new Date();
+
+        if (this._shouldLogToFile) {
+            const fileLog = `${currentDate.toLocaleString()} | ${text}\n`;
+            this._fileSystem.appendFile(this._logsFilePath, fileLog, () => {});
+        }
+
+        console.log(`| ${currentDate.toLocaleTimeString()} | ${formattedText}`);
     }
 }
 

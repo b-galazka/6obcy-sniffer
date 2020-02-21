@@ -60,4 +60,7 @@ test.env
 prod.env
 dev.env
 
-dist/
+./dist
+
+# default logs directory
+./logs
