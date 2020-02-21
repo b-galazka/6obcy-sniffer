@@ -49,6 +49,7 @@ class Stranger extends EventEmitter {
         });
     }
 
+    // TODO: should take an event to emit as param
     endConversation({ isTimeout = false } = {}) {
         this._isConversationEndedByMe = !isTimeout;
         this._isConversationEndedByTimeout = isTimeout;
@@ -95,16 +96,24 @@ class Stranger extends EventEmitter {
 
         switch (msgData.ev_name) {
             case 'talk_s':
-                return this._handleConversationStart(msgData);
+                this._handleConversationStart(msgData);
+                break;
 
             case 'rmsg':
-                return this._handleStrangerMessage(msgData);
+                this._handleStrangerMessage(msgData);
+                break;
 
             case 'sdis':
-                return this._handleConversationEnd();
+                this._handleConversationEnd();
+                break;
 
             case 'rtopic':
-                return this._handleRandomQuestion(msgData);
+                this._handleRandomQuestion(msgData);
+                break;
+
+            case 'prohmsg':
+                this._handleProhibitedMessage(msgData);
+                break;
         }
     }
 
@@ -134,6 +143,10 @@ class Stranger extends EventEmitter {
 
     _handleRandomQuestion(msgData) {
         this.emit(strangerEvents.randomQuestion, msgData.ev_data.topic);
+    }
+
+    _handleProhibitedMessage(msgData) {
+        this.emit(strangerEvents.prohibitedMessage, msgData.ev_data.msg);
     }
 }
 

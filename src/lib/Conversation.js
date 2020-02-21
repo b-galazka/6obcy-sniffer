@@ -1,12 +1,25 @@
 const strangerEvents = require('../consts/strangerEvents');
 
 class Conversation {
-    constructor(stranger1, stranger2, inactiveConversationTimeout, logger) {
+    constructor({
+        stranger1,
+        stranger2,
+        inactiveConversationTimeout,
+        logger,
+        consoleIoInterface,
+        stdin
+    }) {
         this._stranger1 = stranger1;
         this._stranger2 = stranger2;
         this._inactiveConversationTimeout = inactiveConversationTimeout;
         this._logger = logger;
+        this._consoleIoInterface = consoleIoInterface;
+        this._stdin = stdin;
         this._conversationTimeoutId = null;
+    }
+
+    get isConversationStarted() {
+        return this._stranger1.isConversationStarted && this._stranger2.isConversationStarted;
     }
 
     init() {
@@ -15,13 +28,14 @@ class Conversation {
         this._setConversationEndByMeHandlers();
         this._setConversationEndByAnotherStrangerHandlers();
         this._setConversationTimeoutHandlers();
+        this._setUserInputHandler();
 
         this._stranger1.initConnection();
         this._stranger2.initConnection();
 
         this._logger.info('conversation searching');
 
-        process.stdin.resume();
+        this._stdin.resume();
     }
 
     _setMessageHandlers() {
@@ -29,7 +43,8 @@ class Conversation {
             clearTimeout(this._conversationTimeoutId);
 
             if (this._stranger2.isConversationStarted) {
-                return this._talkToStranger2(msg);
+                this._talkToStranger2(msg);
+                return;
             }
 
             this._stranger2.once(strangerEvents.conversationStart, () =>
@@ -41,7 +56,8 @@ class Conversation {
             clearTimeout(this._conversationTimeoutId);
 
             if (this._stranger1.isConversationStarted) {
-                return this._talkToStranger1(msg);
+                this._talkToStranger1(msg);
+                return;
             }
 
             this._stranger1.once(strangerEvents.conversationStart, () =>
@@ -50,13 +66,13 @@ class Conversation {
         });
     }
 
-    _talkToStranger1(msg) {
-        this._logger.stranger1(msg);
+    _talkToStranger1(msg, senderName = 'Stranger2') {
+        this._logger.stranger2(msg, senderName);
         this._stranger1.sendMessage(msg);
     }
 
-    _talkToStranger2(msg) {
-        this._logger.stranger2(msg);
+    _talkToStranger2(msg, senderName = 'Stranger1') {
+        this._logger.stranger1(msg, senderName);
         this._stranger2.sendMessage(msg);
     }
 
@@ -133,6 +149,55 @@ class Conversation {
         this._stranger2.on(strangerEvents.randomQuestion, question => {
             this._logger.info(`stranger2 random question: ${question}`);
         });
+    }
+
+    _setUserInputHandler() {
+        this._consoleIoInterface.on('line', userInput => {
+            if (!this.isConversationStarted) {
+                this._logger.info('conversation not started yet');
+                return;
+            }
+
+            const { command, param } = Conversation._parseUserInput(userInput);
+
+            switch (command) {
+                case '1':
+                    this._talkToStranger2(param, 'You');
+                    break;
+
+                case '2':
+                    this._talkToStranger1(param, 'You');
+                    break;
+
+                default:
+                    this._logger.info(`unknown command: ${command}`);
+            }
+        });
+    }
+
+    static _parseUserInput(userInput) {
+        const firstColonPos = userInput.indexOf(':');
+
+        return firstColonPos === -1
+            ? { command: userInput.trim(), param: null }
+            : {
+                  command: userInput.slice(0, firstColonPos).trim(),
+                  param: userInput.slice(firstColonPos + 1).trim()
+              };
+    }
+
+    _setProhibitedMessageHandler() {
+        this._stranger1.on(strangerEvents.prohibitedMessage, msg =>
+            this._handleProhibitedMessage(msg)
+        );
+
+        this._stranger2.on(strangerEvents.prohibitedMessage, msg =>
+            this._handleProhibitedMessage(msg)
+        );
+    }
+
+    _handleProhibitedMessage(msg) {
+        this._logger.info(`prohibited message: ${msg}`);
     }
 }
 

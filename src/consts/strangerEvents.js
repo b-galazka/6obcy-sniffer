@@ -4,5 +4,6 @@ module.exports = {
     conversationEndByAnotherStranger: 'conversationEndByAnotherStranger',
     conversationTimeout: 'conversationTimeout',
     message: 'message',
-    randomQuestion: 'randomQuestion'
+    randomQuestion: 'randomQuestion',
+    prohibitedMessage: 'prohibitedMessage'
 };

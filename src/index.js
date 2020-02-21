@@ -1,5 +1,6 @@
 const WsClient = require('websocket').client;
 const colors = require('colors/safe');
+const readline = require('readline');
 
 const { Stranger } = require('./lib/Stranger');
 const { Conversation } = require('./lib/Conversation');
@@ -13,16 +14,18 @@ colors.setTheme({
     stranger2: 'red'
 });
 
+const consoleIoInterface = readline.createInterface({ input: process.stdin });
 const logger = new Logger(colors);
 
-const conversation = new Conversation(
-    new Stranger(new WsClient(), url, logger),
-    new Stranger(new WsClient(), url, logger),
+const conversation = new Conversation({
+    stranger1: new Stranger(new WsClient(), url, logger),
+    stranger2: new Stranger(new WsClient(), url, logger),
     inactiveConversationTimeout,
-    logger
-);
+    logger,
+    consoleIoInterface,
+    stdin: process.stdin
+});
 
 conversation.init();
 
-// TODO: add "/skip", "1: msg", and "2: msg" commands and prohibited messages
 // TODO: allow to log to files

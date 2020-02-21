@@ -16,15 +16,13 @@ class Logger {
         console.log('</Error>\n');
     }
 
-    stranger1(text) {
-        const formattedText = this._colors.stranger1(`${this._colors.bold('Stranger1')}: ${text}`);
-
+    stranger1(text, strangerName) {
+        const formattedText = this._colors.stranger1(`${this._colors.bold(strangerName)}: ${text}`);
         console.log(formattedText);
     }
 
-    stranger2(text) {
-        const formattedText = this._colors.stranger2(`${this._colors.bold('Stranger2')}: ${text}`);
-
+    stranger2(text, strangerName) {
+        const formattedText = this._colors.stranger2(`${this._colors.bold(strangerName)}: ${text}`);
         console.log(formattedText);
     }
 }
