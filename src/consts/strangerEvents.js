@@ -3,5 +3,6 @@ module.exports = {
     conversationEndByMe: 'conversationEndByMe',
     conversationEndByAnotherStranger: 'conversationEndByAnotherStranger',
     conversationTimeout: 'conversationTimeout',
-    message: 'message'
+    message: 'message',
+    randomQuestion: 'randomQuestion'
 };

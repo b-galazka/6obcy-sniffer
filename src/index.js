@@ -24,6 +24,5 @@ const conversation = new Conversation(
 
 conversation.init();
 
-// TODO: add "/skip", "1: msg", and "2: msg" commands
-// TODO: handle random questions
+// TODO: add "/skip", "1: msg", and "2: msg" commands and prohibited messages
 // TODO: allow to log to files

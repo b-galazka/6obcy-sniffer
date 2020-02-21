@@ -124,6 +124,16 @@ class Conversation {
             stranger.endConversation({ isTimeout: true });
         }, this._inactiveConversationTimeout);
     }
+
+    _setRandomQuestionHandlers() {
+        this._stranger1.on(strangerEvents.randomQuestion, question => {
+            this._logger.info(`stranger1 random question: ${question}`);
+        });
+
+        this._stranger2.on(strangerEvents.randomQuestion, question => {
+            this._logger.info(`stranger2 random question: ${question}`);
+        });
+    }
 }
 
 module.exports = { Conversation };

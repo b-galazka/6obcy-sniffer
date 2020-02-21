@@ -93,8 +93,6 @@ class Stranger extends EventEmitter {
     _handleSocketMessage({ utf8Data }) {
         const msgData = parseJson(utf8Data);
 
-        console.log(msgData);
-
         switch (msgData.ev_name) {
             case 'talk_s':
                 return this._handleConversationStart(msgData);
@@ -104,6 +102,9 @@ class Stranger extends EventEmitter {
 
             case 'sdis':
                 return this._handleConversationEnd();
+
+            case 'rtopic':
+                return this._handleRandomQuestion(msgData);
         }
     }
 
@@ -129,6 +130,10 @@ class Stranger extends EventEmitter {
         this._conversationKey = null;
         this._isConversationEndedByMe = false;
         this._isConversationEndedByTimeout = false;
+    }
+
+    _handleRandomQuestion(msgData) {
+        this.emit(strangerEvents.randomQuestion, msgData.ev_data.topic);
     }
 }
 
