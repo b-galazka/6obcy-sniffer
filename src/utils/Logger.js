@@ -20,14 +20,16 @@ class Logger {
 
     static _getLogsFileName() {
         const currentDate = new Date();
+        const timezoneOffsetInMs = currentDate.getTimezoneOffset() * 60 * 1000;
+        const isoDate = new Date(currentDate.getTime() - timezoneOffsetInMs).toISOString();
 
-        const date = currentDate
-            .toLocaleDateString('pl-PL')
-            .split('.')
+        const date = isoDate
+            .slice(0, isoDate.indexOf('T'))
+            .split('-')
             .join('_');
 
-        const time = currentDate
-            .toLocaleTimeString('pl-PL')
+        const time = isoDate
+            .slice(isoDate.indexOf('T') + 1, isoDate.indexOf('.'))
             .split(':')
             .join('_');
 
