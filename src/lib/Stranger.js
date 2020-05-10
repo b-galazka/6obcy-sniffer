@@ -4,11 +4,12 @@ const { parseJson } = require('../utils/parseJson');
 const strangerEvents = require('../consts/strangerEvents');
 
 class Stranger extends EventEmitter {
-    constructor(wsClient, url, logger) {
+    constructor({ wsClient, url, logger, originUrl }) {
         super();
 
         this._wsClient = wsClient;
         this._url = url;
+        this._originUrl = originUrl;
         this._logger = logger;
         this._isConversationEndedByMe = false;
         this._isConversationEndedByTimeout = false;
@@ -24,7 +25,7 @@ class Stranger extends EventEmitter {
     initConnection() {
         this._wsClient.on('connect', socket => this._handleConnectionSuccess(socket));
         this._wsClient.on('connectFailed', Stranger._handleConnectionError);
-        this._wsClient.connect(this._url);
+        this._wsClient.connect(this._url, undefined, this._originUrl);
     }
 
     sendMessage(msg) {

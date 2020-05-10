@@ -7,7 +7,14 @@ const path = require('path');
 const { Stranger } = require('./lib/Stranger');
 const { Conversation } = require('./lib/Conversation');
 const { Logger } = require('./utils/Logger');
-const { url, inactiveConversationTimeout, logToFile, logsDirectory } = require('./config');
+
+const {
+    url,
+    inactiveConversationTimeout,
+    logToFile,
+    logsDirectory,
+    originUrl
+} = require('./config');
 
 colors.setTheme({
     info: 'brightBlue',
@@ -26,8 +33,8 @@ const logger = new Logger(
 ).init();
 
 const conversation = new Conversation({
-    stranger1: new Stranger(new WsClient(), url, logger),
-    stranger2: new Stranger(new WsClient(), url, logger),
+    stranger1: new Stranger({ wsClient: new WsClient(), url, logger, originUrl }),
+    stranger2: new Stranger({ wsClient: new WsClient(), url, logger, originUrl }),
     inactiveConversationTimeout,
     logger,
     consoleIoInterface,
