@@ -3,6 +3,8 @@ const EventEmitter = require('events');
 const { parseJson } = require('../utils/parseJson');
 const strangerEvents = require('../consts/strangerEvents');
 
+const indexjs = require("../index.js")
+
 class Stranger extends EventEmitter {
     constructor({ wsClient, url, logger, originUrl }) {
         super();
@@ -16,6 +18,7 @@ class Stranger extends EventEmitter {
         this._ceid = 0;
         this._socket = null;
         this._conversationKey = null;
+        this.captcha = "";
     }
 
     get isConversationStarted() {
@@ -34,6 +37,12 @@ class Stranger extends EventEmitter {
             msg,
             idn: 0
         });
+    }
+
+    sendCaptchaResponse(answer) {
+        this._emitSocketEvent('_capsol', {
+            solution: answer
+        })
     }
 
     startConversation() {
@@ -94,7 +103,6 @@ class Stranger extends EventEmitter {
 
     _handleSocketMessage({ utf8Data }) {
         const msgData = parseJson(utf8Data);
-
         switch (msgData.ev_name) {
             case 'talk_s':
                 this._handleConversationStart(msgData);
@@ -115,6 +123,10 @@ class Stranger extends EventEmitter {
             case 'prohmsg':
                 this._handleProhibitedMessage(msgData);
                 break;
+            case 'caprecvsas':
+                console.log(msgData)
+                this.captcha = msgData.ev_data.tlce.data
+                indexjs.sendCaptchaToClient(this.captcha)
         }
     }
 

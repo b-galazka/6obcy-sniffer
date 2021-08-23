@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/socket.io/socket.io.js"></script>
+    <title>6obcy sniffer</title>
+</head>
+
+<body>
+    <script>
+        var socket = io()
+        socket.on("connect", () => {
+            console.log("Connected to socket")
+        })
+        socket.on("captcha", (message) => {
+
+            var image = new Image();
+            image.src = message[0];
+            document.body.getElementsByClassName("captcha" + message[1])[0].appendChild(image);
+
+        })
+
+        window.onload = function () {
+            var captcha1 = document.body.getElementsByClassName("inputCaptcha1")[0]
+            var captcha2 = document.body.getElementsByClassName("inputCaptcha2")[0]
+            captcha1.addEventListener("keyup", function (event) {
+                if (event.keyCode === 13) {         // Enter
+                    console.log(captcha1.value)
+                    socket.emit("captchaResponse", [captcha1.value, 1])
+                }
+            })
+
+            captcha2.addEventListener("keyup", function (event) {
+                if (event.keyCode === 13) {         // Enter
+                    console.log(captcha2.value)
+                    socket.emit("captchaResponse", [captcha2.value, 2])
+                }
+            })
+        }
+
+    </script>
+    <div class="captcha1"></div>
+    <input type="text" class="inputCaptcha1">
+    <div class="captcha2"></div>
+    <input type="text" class="inputCaptcha2">
+</body>
+
+</html>
